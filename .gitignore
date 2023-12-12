@@ -1,0 +1,8 @@
+*env*
+!env.template
+!env.example
+!scripts/env.sh
+.DS_Store
+*.png
+*.gif
+output*

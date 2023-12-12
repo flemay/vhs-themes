@@ -1,0 +1,9 @@
+# Define golang environment to run main.go
+services:
+  golang:
+    image: golang:alpine
+    volumes:
+      - type: bind
+        source: .
+        target: /mnt/src
+    working_dir: /mnt/src

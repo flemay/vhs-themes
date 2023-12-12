@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  vhs:
+    build: .
+    image: flemay/vhs-themes:local
+    volumes:
+      - type: bind
+        source: "."
+        target: /mnt/src
+    working_dir: /mnt/src
+    environment:
+      - TZ="${ENV_TZ:-UTC}"
+      - TERM=xterm-256color
+    env_file: "${ENVFILE:-.env}"

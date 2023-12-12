@@ -1,0 +1,28 @@
+name: Publish
+on:
+  workflow_dispatch: null
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      # By default, workflow has read-only access to contents and packages
+      # Permissions: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
+      # Give the workflow write access to modify the code
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish
+        run: make ciPublish
+        env:
+          ENV_ENABLE_OUTPUT_ASCII: ${{ vars.ENV_ENABLE_OUTPUT_ASCII }}
+          ENV_GIT_EMAIL: ${{ secrets.ENV_GIT_EMAIL }}
+          ENV_GIT_NAME: ${{ vars.ENV_GIT_NAME }}
+          ENV_GIT_REPO_NAME: ${{ vars.ENV_GIT_REPO_NAME }}
+          ENV_GIT_REPO_URL: ${{ vars.ENV_GIT_REPO_URL }}
+          ENV_GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENV_GIT_USERNAME: ${{ vars.ENV_GIT_USERNAME }}
+          ENV_PAGINATION: ${{ vars.ENV_PAGINATION }}
+          ENV_PUBLISH_BRANCH: ${{ vars.ENV_PUBLISH_BRANCH }}
+          ENV_THEMES: ${{ vars.ENV_THEMES }}
+          ENV_THEMES_LIMIT: ${{ vars.ENV_THEMES_LIMIT }}
+          ENV_TZ: ${{ vars.ENV_TZ }}

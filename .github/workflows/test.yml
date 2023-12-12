@@ -1,0 +1,24 @@
+name: Test
+on:
+  workflow_dispatch: null
+  pull_request:
+    paths-ignore:
+      - '*.md'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: make ciTestE2E
+        env:
+          ENV_GIT_EMAIL: ${{ secrets.ENV_GIT_EMAIL }}
+          ENV_GIT_NAME: ${{ vars.ENV_GIT_NAME }}
+          ENV_GIT_REPO_NAME: ${{ vars.ENV_GIT_REPO_NAME }}
+          ENV_GIT_REPO_URL: ${{ vars.ENV_GIT_REPO_URL }}
+          ENV_GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENV_GIT_USERNAME: ${{ vars.ENV_GIT_USERNAME }}
+          ENV_PUBLISH_BRANCH: ${{ vars.ENV_PUBLISH_BRANCH }}
+          ENV_TZ: ${{ vars.ENV_TZ }}
