@@ -1,6 +1,6 @@
 # VHS Themes
 
-**VHS Themes** generates and hosts a gallery showcasing ~280 themes from [charmbracelet/vhs](https://github.com/charmbracelet/vhs).
+**VHS Themes** generates and hosts a gallery showcasing ~350 themes from [charmbracelet/vhs](https://github.com/charmbracelet/vhs).
 
 ## Themes
 
