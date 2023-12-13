@@ -98,6 +98,7 @@ printPageHeaderOrFooter(){
         printf "[[< Home](../../main)] [[Index](../records/)]<br>\n"
         printf "%s<br>\n" "${_layout1Links}"
         printf "%s<br>\n" "${_layout2Links}"
+        printf "> Tip: Resize the records by resizing the page\n\n"
     } >> "${_pagePath}"
 }
 
