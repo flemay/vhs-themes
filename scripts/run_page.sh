@@ -128,8 +128,8 @@ printPageLayout1(){
     printf "# VHS Themes\n\n" > "${_pagePath}"
     printPageHeaderOrFooter _recordFiles "${_pagePath}" "${_pageNo}" "${_layoutNo}"
     {
-        printf "| Name | Example |\n"
-        printf "|:----:|:-------:|\n"
+        printf "|||\n"
+        printf "|:---:|:----:|\n"
     } >> "${_pagePath}"
 
     declare -i _fromIndex
@@ -141,7 +141,8 @@ printPageLayout1(){
         local _path=""
         local _name=""
         getRelativePathAndName _path _name "${_recordFile}"
-        local _imageLink="<img alt=\"${_name}\" src=\"${_path}\" width=\"500px\">"
+        #local _imageLink="<img alt=\"${_name}\" src=\"${_path}\" width=\"500px\"><br>${_recordCounter}. ${_name}"
+        local _imageLink="![${_name}](${_path})"
         printf "| %d. %s | %s |\n" "${_recordCounter}" "${_name}" "${_imageLink}" >> "${_pagePath}"
     done
     printf "\n" >> "${_pagePath}"
