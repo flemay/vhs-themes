@@ -8,7 +8,7 @@ export ENV_INPUT_DIR=input
 export ENV_OUTPUT_DIR="${testOutputDir}"
 export ENV_PAGINATION=2
 export ENV_PUBLISH_BRANCH="themes_test_e2e"
-export ENV_THEMES="TokyoNight,3024 Day,Adventure"
+export ENV_THEMES="TokyoNight,3024 Day,Adventure,Aurora"
 export ENV_THEMES_LIMIT=3
 
 source scripts/env.sh

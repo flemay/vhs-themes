@@ -32,7 +32,9 @@ make --version
 curl --version
 EOF
 
-COPY nvim-init.lua /root/.config/nvim/init.lua
+COPY --from=build /go/bin/vhs /usr/bin/vhs
 RUN vhs --version
 COPY --from=build /go/bin/gum /usr/bin/gum
 RUN gum --version
+
+COPY nvim-init.lua /root/.config/nvim/init.lua

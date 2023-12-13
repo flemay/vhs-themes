@@ -1,4 +1,4 @@
-COMPOSE_BUILD_VHS = docker compose build vhs
+COMPOSE_BUILD_VHS = docker compose build --no-cache vhs
 COMPOSE_RUN_VHS_BASH = docker compose run --rm --entrypoint bash vhs
 COMPOSE_RUN_VHS_MAKE = docker compose run --rm --entrypoint make vhs
 ENVFILE ?= env.template

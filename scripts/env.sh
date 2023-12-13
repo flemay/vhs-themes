@@ -12,6 +12,11 @@ logInfo(){
     gum log --time="DateTime" --level info "${_message}"
 }
 
+logWarn(){
+    declare -r _message="${1}"
+    gum log --time="DateTime" --level warn "${_message}"
+}
+
 logError(){
     declare -r _message="${1}"
     gum log --time="DateTime" --level error "${_message}"
