@@ -9,7 +9,7 @@ checkMetadataLock
 
 # returns the themes sorted minus the duplicates (repeated).
 # For finding the duplicates (repeated)
-# - ignore case option is used because some systems have case-insensitive. So "Adventure" and "adventure" will be counted as duplicates otherwise "adventure" recording will overwrite "Adventure" whilst the name will remain "Adventure.gif"
+# - ignore case option is used because some systems are case-insensitive. So "Adventure" and "adventure" will be counted as duplicates otherwise "adventure" recording will overwrite "Adventure" whilst the name will remain "Adventure.gif"
 # - Sort reverse is used because of the way "uniq --ignore-case" and "uniq --ignore-case --repeated" works.
 #
 # Example:
