@@ -8,7 +8,7 @@ export ENV_INPUT_DIR=input
 export ENV_OUTPUT_DIR="${testOutputDir}"
 export ENV_PAGINATION=2
 export ENV_PUBLISH_BRANCH="themes_test_e2e"
-export ENV_THEMES="TokyoNight,3024 Day,Adventure,Aurora"
+export ENV_THEMES="TokyoNight,3024 Day,Adventure,Aurora,adventure"
 export ENV_THEMES_LIMIT=3
 
 source scripts/env.sh
@@ -24,6 +24,7 @@ removeMetadataLock
 readonly expectedOutputFilesAndDirs="${testOutputDir}
 ${testOutputDir}/README.md
 ${testOutputDir}/pages
+${testOutputDir}/pages/index.md
 ${testOutputDir}/pages/page_l1_1.md
 ${testOutputDir}/pages/page_l1_2.md
 ${testOutputDir}/pages/page_l2_1.md
@@ -33,8 +34,8 @@ ${testOutputDir}/records/3024 Day.ascii
 ${testOutputDir}/records/3024 Day.gif
 ${testOutputDir}/records/Adventure.ascii
 ${testOutputDir}/records/Adventure.gif
-${testOutputDir}/records/TokyoNight.ascii
-${testOutputDir}/records/TokyoNight.gif"
+${testOutputDir}/records/Aurora.ascii
+${testOutputDir}/records/Aurora.gif"
 
 outputFilesAndDirs=$(find "${ENV_OUTPUT_DIR}" | LC_ALL=C sort)
 

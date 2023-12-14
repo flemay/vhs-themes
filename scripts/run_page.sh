@@ -95,7 +95,7 @@ printPageHeaderOrFooter(){
     {
         printf "Page %d of %d (layout %d)\n\n" "${_pageNo}" "${_totalPages}" "${_layoutNo}"
         printf "Total of %d records (themes) generated with \`%s\`\n\n" "${_totalRecords}" "${_vhsVersion}"
-        printf "[[< Home](../../main)] [[Index](../records/)]<br>\n"
+        printf "[[< Home](../../main)] [[Index](index.md)]<br>\n"
         printf "%s<br>\n" "${_layout1Links}"
         printf "%s<br>\n" "${_layout2Links}"
         printf "> Tip: Resize the records by resizing the page\n\n"
@@ -196,13 +196,26 @@ printPageLayout2(){
 # This creates a README inside output dir
 # This is done here so it can be tested before calling publish
 createREADME(){
-    declare -r readmePath="${ENV_OUTPUT_DIR}/README.md"
-    logInfo "Create ${ENV_OUTPUT_DIR}/README.md"
-    rm -fr "${readmePath}"
-    cp "${ENV_OUTPUT_DIR}"/pages/page_l2_1.md "${readmePath}"
-    sed -i 's/..\/records\//records\//g' "${readmePath}"
-    sed -i 's/(page_/(pages\/page_/g' "${readmePath}"
-    sed -i 's/(..\/..\/main)/(..\/main)/' "${readmePath}"
+    declare -r _readmePath="${ENV_OUTPUT_DIR}/README.md"
+    logInfo "Create ${_readmePath}"
+    rm -fr "${_readmePath}"
+    cp "${ENV_OUTPUT_DIR}"/pages/page_l2_1.md "${_readmePath}"
+    sed -i 's/..\/records\//records\//g' "${_readmePath}"
+    sed -i 's/(page_/(pages\/page_/g' "${_readmePath}"
+    sed -i 's/(..\/..\/main)/(..\/main)/' "${_readmePath}"
+}
+
+createIndex(){
+    declare -nr _recordFiles="${1}"
+    declare -r _indexPath="${ENV_OUTPUT_DIR}/pages/index.md"
+    logInfo "Create ${_indexPath}"
+    printf "# Index\n\n" > "${_indexPath}"
+    local _path
+    local _name
+    for _recordFile in "${_recordFiles[@]}"; do
+        getRelativePathAndName _path _name "${_recordFile}"
+        printf "1. [%s](%s)\n" "${_name}" "${_path}" >> "${_indexPath}"
+    done
 }
 
 rm -fr "${ENV_OUTPUT_DIR:?}"/pages
@@ -212,7 +225,10 @@ vhsVersion=$(vhs --version)
 readonly vhsVersion
 readonly recordsDir="${ENV_OUTPUT_DIR}"/records
 # shellcheck disable=SC2312,SC2034
-mapfile -t recordFiles < <(find "${recordsDir}"/*.gif)
+mapfile -t recordFiles < <(find "${recordsDir}"/*.gif | LC_ALL=C sort -f)
+
+createIndex recordFiles
+
 declare -i totalPages=0
 getTotalPages totalPages recordFiles
 

@@ -7,19 +7,43 @@ logInfo "Recording started..."
 source scripts/metadata.sh
 checkMetadataLock
 
-checkVHSThemeDuplicates(){
-    local _duplicatedThemes
-    _duplicatedThemes=$(vhs themes 2>&1 | sort | uniq -d)
-    if [[ -z "${_duplicatedThemes}" ]];then
-        logInfo "No duplicated themes found"
-        return 0
+# returns the themes sorted minus the duplicates (repeated).
+# For finding the duplicates (repeated)
+# - ignore case option is used because some systems have case-insensitive. So "Adventure" and "adventure" will be counted as duplicates otherwise "adventure" recording will overwrite "Adventure" whilst the name will remain "Adventure.gif"
+# - Sort reverse is used because of the way "uniq --ignore-case" and "uniq --ignore-case --repeated" works.
+#
+# Example:
+#
+# The following is what the function will return. Notice it returns "Adventure"
+# printf "%s\n" "Tokyo" "Adventure" "adventure" | sort --ignore-case | uniq --ignore-case
+#Adventure
+#Tokyo
+#
+# Let's find the duplicates (repeated) without reverse sort. It returns "Adventure". This is not what we want to print out.
+# printf "%s\n" "Tokyo" "Adventure" "adventure" | sort --ignore-case | uniq --ignore-case --repeated
+#Adventure
+#
+# Now, let's find duplicates (repeated) with reverse. It returns what we want to display.
+# printf "%s\n" "Tokyo" "Adventure" "adventure" | sort --ignore-case --reverse | uniq --ignore-case --repeated
+#adventure
+sortThemesAndRemoveDuplicates(){
+    declare -n _retThemes2="${1}"
+
+    declare -a _duplicates
+    mapfile -t _duplicates < <(printf "%s\n" "${_retThemes2[@]}" \
+        | LC_ALL=C sort --ignore-case --reverse \
+        | uniq --ignore-case --repeated \
+        || true)
+    if (( ${#_duplicates[@]} > 0 ));then
+        logWarn "The followning ${#_duplicates[@]} themes are duplicates and discarded:"
+        logWarn "${_duplicates[@]}"
+        logWarn "Note: Having same name but with different cases (upper/lower) may cause the record to be overwitten on system that is case-insensitive"
     fi
-    declare -i _duplicatedThemeCount
-    _duplicatedThemeCount=$(vhs themes 2>&1 | sort | uniq -d | wc -l)
-    if (( _duplicatedThemeCount > 0 ));then
-        logWarn "The followning ${_duplicatedThemeCount} themes are duplicated:"
-        logWarn "${_duplicatedThemes}"
-    fi
+
+    mapfile -t _retThemes2 < <( printf "%s\n" "${_retThemes2[@]}" \
+        | LC_ALL=C sort --ignore-case \
+        | uniq --ignore-case \
+        || true)
 }
 
 record() {
@@ -79,12 +103,12 @@ getThemes(){
         exit 1
     fi
 
+    sortThemesAndRemoveDuplicates _retThemes
+
     declare -i _limit
     getLimit _limit _retThemes
     _retThemes=("${themes[@]:0:${_limit}}")
 }
-
-checkVHSThemeDuplicates
 
 # https://www.shellcheck.net/wiki/SC2115
 rm -fr "${ENV_OUTPUT_DIR:?}"/*
