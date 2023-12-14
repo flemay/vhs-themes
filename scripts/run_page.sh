@@ -201,6 +201,7 @@ createREADME(){
     rm -fr "${_readmePath}"
     cp "${ENV_OUTPUT_DIR}"/pages/page_l2_1.md "${_readmePath}"
     sed -i 's/..\/records\//records\//g' "${_readmePath}"
+    sed -i 's/(index.md)/(pages\/index.md)/g' "${_readmePath}"
     sed -i 's/(page_/(pages\/page_/g' "${_readmePath}"
     sed -i 's/(..\/..\/main)/(..\/main)/' "${_readmePath}"
 }
