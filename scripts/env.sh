@@ -54,4 +54,7 @@ checkEnvVars(){
     fi
 }
 
+# https://www.baeldung.com/linux/directory-md5-checksum
+# > Letters, numbers, dates, and how they should be sorted can change from locale to locale. This can change our results for directories residing on two systems with different locale settings.
+export LC_ALL=C
 checkEnvVars
