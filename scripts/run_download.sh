@@ -12,7 +12,8 @@ rm -fr "${ENV_OUTPUT_DIR}"
 
 readonly tmpRepoDir="/tmp/${ENV_GIT_REPO_NAME:?}"
 rm -fr "${tmpRepoDir}"
-gitAuth clone --branch "${ENV_PUBLISH_BRANCH}" "${ENV_GIT_REPO_URL:?}" "${tmpRepoDir}"
+# the Git clone option `--single-branch` prevents from downloading other branches. For instance, `make testE2E` without this option would also download the branch `themes` which is about 40mb in size. Now with this option, only branch `themes_test_e2e` (5mb) is downloaded.
+gitAuth clone --branch "${ENV_PUBLISH_BRANCH}" --single-branch "${ENV_GIT_REPO_URL:?}" "${tmpRepoDir}"
 rm -fr "${tmpRepoDir}"/.git
 
 mv "${tmpRepoDir}" "${ENV_OUTPUT_DIR}"
