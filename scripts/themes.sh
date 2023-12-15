@@ -4,10 +4,13 @@ IFS=$'\n\t'
 
 # This file contains all function related to themes!
 #
+# Few important points:
+# - ignore case option is used because some systems are case-insensitive. So "Adventure" and "adventure" will be counted as duplicates otherwise "adventure" recording will overwrite "Adventure" whilst the name will remain "Adventure.gif"
+# - Sort reverse is used because of the way "uniq --ignore-case" and "uniq --ignore-case --repeated" works.
 #
 # Here's an example of expected behaviour between uniq and duplicates (repeated):
 #
-# The following is what the function will return. Notice it returns "Adventure"
+# The following is what the function getAllUniqThemes would return. Notice it returns "Adventure"
 # printf "%s\n" "Tokyo" "Adventure" "adventure" | sort --ignore-case | uniq --ignore-case
 #Adventure
 #Tokyo
@@ -47,21 +50,24 @@ getAllThemes(){
     fi
 }
 
-
-# getAllThemeRepeatedDuplicates gets all duplicates (repeated) which are excluded from the function getAllUniqThemes
-# For finding the duplicates (repeated)
-# - ignore case option is used because some systems are case-insensitive. So "Adventure" and "adventure" will be counted as duplicates otherwise "adventure" recording will overwrite "Adventure" whilst the name will remain "Adventure.gif"
-# - Sort reverse is used because of the way "uniq --ignore-case" and "uniq --ignore-case --repeated" works.
-#
-
-#
-getAllThemeRepeatedDuplicates(){
+# getAllDuplicateThemes gets all duplicate themes (repeated) which are excluded from the function getAllUniqThemes
+getAllDuplicateThemes(){
     declare -n _retDuplicates="${1}"
     getAllThemes _retDuplicates
     mapfile -t _retDuplicates < <(printf "%s\n" "${_retDuplicates[@]}" \
         | sort --ignore-case --reverse \
         | uniq --ignore-case --repeated \
         || true)
+}
+
+warnIfDuplicateThemes(){
+    declare -a _duplicates
+    getAllDuplicateThemes _duplicates
+    if (( ${#_duplicates[@]} > 0 ));then
+        local _commaSeparatedDuplicates
+        arrayToCommaSeparatedString _commaSeparatedDuplicates _duplicates
+        logWarn "${#_duplicates[@]} duplicate themes discarded: ${_commaSeparatedDuplicates}"
+    fi
 }
 
 # getAllUniqThemes returns all themes excluding duplicates (repeated)
@@ -76,7 +82,7 @@ getAllUniqThemes(){
 getLimit(){
     declare -n _retLimit="${1}"
     declare -nr _themes="${2}"
-    declare -r _totalThemes="${#themes[@]}"
+    declare -r _totalThemes="${#_themes[@]}"
 
     if (( "${ENV_THEMES_LIMIT:?}" == -1 )); then
         _retLimit="${_totalThemes}"
@@ -91,7 +97,6 @@ getThemes(){
     declare -n _retThemes="${1}"
     getAllUniqThemes _retThemes
     declare -i _limit
-    getLimit _limit
+    getLimit _limit _retThemes
     _retThemes=("${_retThemes[@]:0:${_limit}}")
 }
-

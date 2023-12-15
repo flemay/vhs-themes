@@ -2,6 +2,8 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+source scripts/themes.sh
+
 readonly metadataFilePath="${ENV_OUTPUT_DIR:?}/metadata.txt"
 readonly metadataLockFilePath="${ENV_OUTPUT_DIR:?}/metadata.lock"
 
@@ -29,22 +31,34 @@ downloadMetadataFile() {
 # - https://www.baeldung.com/linux/directory-md5-checksum
 generateMetadata(){
     logInfo "Metadata check: generate metadata '${metadataFilePath}'"
-    local vhsVersion
-    vhsVersion=$(vhs --version)
-    local inputChecksum
-    if ! inputChecksum=$(find "${ENV_INPUT_DIR:?}" -type f -exec sha256sum {} + | LC_ALL=C sort | sha256sum | awk '{print $1}');then
+    local _vhsVersion
+    _vhsVersion=$(vhs --version)
+    local _inputChecksum
+    if ! _inputChecksum=$(find "${ENV_INPUT_DIR:?}" -type f -exec sha256sum {} + | LC_ALL=C sort | sha256sum | awk '{print $1}');then
         logError "Metadata check: something went wrong when doing checksum of ${ENV_INPUT_DIR}"
         exit 1
     fi
+    declare -a _themes2
+    getThemes _themes2
+    local _themesString
+    arrayToCommaSeparatedString _themesString _themes2
+    declare -a _duplicateThemes
+    getAllDuplicateThemes _duplicateThemes
+    local _duplicateThemesString
+    arrayToCommaSeparatedString _duplicateThemesString _duplicateThemes
 
     mkdir -p "${ENV_OUTPUT_DIR:?}"
     rm -fr "${metadataFilePath}"
     {
-        printf "VHS version: %s\n" "${vhsVersion}"
+        printf "VHS version: %s\n" "${_vhsVersion}"
         printf "Themes: %s\n" "${ENV_THEMES:?}"
         printf "Themes limit: %d\n" "${ENV_THEMES_LIMIT:?}"
         printf "Pagination: %d\n" "${ENV_PAGINATION:?}"
-        printf "Dir ${ENV_INPUT_DIR}: %s\n" "${inputChecksum}"
+        printf "Dir ${ENV_INPUT_DIR}: %s\n" "${_inputChecksum}"
+        printf "Themes recorded count: %s\n" "${#_themes2[@]}"
+        printf "Themes recorded: %s\n" "${_themesString}"
+        printf "Duplicate themes count: %s\n" "${#_duplicateThemes[@]}"
+        printf "Duplicate themes: %s\n" "${_duplicateThemesString}"
     } >> "${metadataFilePath}"
 }
 
@@ -62,19 +76,19 @@ removeMetadataLock(){
 }
 
 checkMetadata(){
-    declare -r remoteMetadataFilePath="/tmp/metadata.txt"
-    downloadMetadataFile "${remoteMetadataFilePath}"
-    if ! remoteMetadataChecksum=$(sha256sum "${remoteMetadataFilePath}" | awk '{print $1}');then
-        logError "Metadata check: something went wrong when doing checksum of '${remoteMetadataFilePath}'"
+    declare -r _remoteMetadataFilePath="/tmp/metadata.txt"
+    downloadMetadataFile "${_remoteMetadataFilePath}"
+    if ! _remoteMetadataChecksum=$(sha256sum "${_remoteMetadataFilePath}" | awk '{print $1}');then
+        logError "Metadata check: something went wrong when doing checksum of '${_remoteMetadataFilePath}'"
         exit 1
     fi
-    if ! metadataChecksum=$(sha256sum "${metadataFilePath}" | awk '{print $1}');then
+    if ! _metadataChecksum=$(sha256sum "${metadataFilePath}" | awk '{print $1}');then
         logError "Metadata check: something went wrong when doing checksum of '${metadataFilePath}'"
         exit 1
     fi
 
     removeMetadataLock
-    if [[ "${remoteMetadataChecksum}" == "${metadataChecksum}" ]];then
+    if [[ "${_remoteMetadataChecksum}" == "${_metadataChecksum}" ]];then
         logInfo "Metadata check: file '${metadataLockFilePath}' has been created because remote and local metadata are the same"
         touch "${metadataLockFilePath}"
         exit 0

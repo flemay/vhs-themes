@@ -54,6 +54,13 @@ checkEnvVars(){
     fi
 }
 
+arrayToCommaSeparatedString(){
+    declare -n _retCommaSeparatedString="${1}"
+    declare -n _array="${2}"
+    printf -v _retCommaSeparatedString '%s,' "${_array[@]}"
+    _retCommaSeparatedString="${_retCommaSeparatedString::-1}"
+}
+
 # https://www.baeldung.com/linux/directory-md5-checksum
 # > Letters, numbers, dates, and how they should be sorted can change from locale to locale. This can change our results for directories residing on two systems with different locale settings.
 export LC_ALL=C

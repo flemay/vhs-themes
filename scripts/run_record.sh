@@ -36,7 +36,8 @@ mkdir -p "${ENV_OUTPUT_DIR}"/records
 
 declare -a themes
 getThemes themes
-exit 0
+warnIfDuplicateThemes
+
 declare -i counter=0
 for theme in "${themes[@]}"; do
     ((counter+=1))
