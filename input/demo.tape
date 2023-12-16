@@ -1,4 +1,3 @@
-# If ENV_ENABLE_OUTPUT_ASCII=true, record.sh will include another command "Output" to the tape file
 Output "${TAPE_OUTPUT}"
 
 Require nvim

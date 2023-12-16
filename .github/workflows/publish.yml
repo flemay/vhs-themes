@@ -14,7 +14,6 @@ jobs:
       - name: Publish
         run: make ciPublish
         env:
-          ENV_ENABLE_OUTPUT_ASCII: ${{ vars.ENV_ENABLE_OUTPUT_ASCII }}
           ENV_GIT_EMAIL: ${{ secrets.ENV_GIT_EMAIL }}
           ENV_GIT_NAME: ${{ vars.ENV_GIT_NAME }}
           ENV_GIT_REPO_NAME: ${{ vars.ENV_GIT_REPO_NAME }}
