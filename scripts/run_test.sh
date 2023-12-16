@@ -8,7 +8,7 @@ export ENV_INPUT_DIR=input
 export ENV_OUTPUT_DIR="${testOutputDir}"
 export ENV_PAGINATION=2
 export ENV_PUBLISH_BRANCH="themes_test_e2e"
-export ENV_THEMES="TokyoNight,adventure,3024 Day,Adventure,Aurora"
+export ENV_THEMES="TokyoNight,tokyonight,3024 Day,Adventure,Aurora,tokyonight"
 export ENV_THEMES_LIMIT=3
 
 source scripts/env.sh
@@ -18,13 +18,13 @@ logInfo "Testing started..."
 
 testMetadata(){
     generateMetadata
-    declare -r _expectedMetadata="Themes: TokyoNight,adventure,3024 Day,Adventure,Aurora
+    declare -r _expectedMetadata="Themes: TokyoNight,tokyonight,3024 Day,Adventure,Aurora,tokyonight
 Themes limit: 3
 Pagination: 2
 Themes recorded count: 3
 Themes recorded: 3024 Day,Adventure,Aurora
-Duplicate themes count: 1
-Duplicate themes: adventure"
+Duplicate themes count: 2
+Duplicate themes: tokyonight,tokyonight"
 
     local _metadata
     # remove 1st and 5th lines for now
@@ -51,12 +51,9 @@ ${testOutputDir}/pages/page_l1_2.md
 ${testOutputDir}/pages/page_l2_1.md
 ${testOutputDir}/pages/page_l2_2.md
 ${testOutputDir}/records
-${testOutputDir}/records/3024 Day.ascii
-${testOutputDir}/records/3024 Day.gif
-${testOutputDir}/records/Adventure.ascii
-${testOutputDir}/records/Adventure.gif
-${testOutputDir}/records/Aurora.ascii
-${testOutputDir}/records/Aurora.gif"
+${testOutputDir}/records/001 3024 Day.gif
+${testOutputDir}/records/002 Adventure.gif
+${testOutputDir}/records/003 Aurora.gif"
 
     _outputFilesAndDirs=$(find "${ENV_OUTPUT_DIR}" | LC_ALL=C sort)
 
@@ -117,6 +114,5 @@ if [[ "${ENV_INT_TEST_E2E:?}" == "true" ]]; then
     testDownload
 fi
 
-rm -fr "${testOutputDir}"
-
+logInfo "Note: You can look at the dir '${testOutputDir}' as well as the remote publish branch '${ENV_PUBLISH_BRANCH}' (if testE2E) for examining result"
 logInfo "Testing done!"

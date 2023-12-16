@@ -43,7 +43,7 @@ generateMetadata(){
     local _themesString
     arrayToCommaSeparatedString _themesString _themes2
     declare -a _duplicateThemes
-    getAllDuplicateThemes _duplicateThemes
+    getAllDuplicateThemes _duplicateThemes "false"
     local _duplicateThemesString
     arrayToCommaSeparatedString _duplicateThemesString _duplicateThemes
 
