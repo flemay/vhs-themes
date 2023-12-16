@@ -107,13 +107,14 @@ getRelativePathAndName(){
     declare -n _retName="${2}"
     declare -r _recordFile="${3}"
 
-    # Transform "output/records/3024 Day.gif" to "../records/3024%20Day.gif"
+    # Transform "output/records/001 3024 Day.gif" to "../records/001%203024%20Day.gif"
     _retPath=${_recordFile/"${ENV_OUTPUT_DIR}"/".."}
     _retPath=${_retPath// /%20}
 
-    # Transform "output/records/3024 Day.gif" to "3024 Day"
+    # Transform "output/records/001 3024 Day.gif" to "3024 Day"
     _retName=${_recordFile#"${ENV_OUTPUT_DIR}"/records/}
-    _retName=${_retName%.gif}
+    _retName="${_retName:4}"
+    _retName="${_retName%.gif}"
 }
 
 printPageLayout1(){
