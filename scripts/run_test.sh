@@ -3,7 +3,6 @@ set -euo pipefail
 IFS=$'\n\t'
 
 readonly testOutputDir="output_test"
-export ENV_ENABLE_OUTPUT_ASCII=true
 export ENV_INPUT_DIR=input
 export ENV_OUTPUT_DIR="${testOutputDir}"
 export ENV_PAGINATION=2

@@ -24,9 +24,6 @@ record() {
 
     rm -fr "${_tapePath}"
     touch "${_tapePath}"
-    #if [[ "${ENV_ENABLE_OUTPUT_ASCII:?}" == "true" ]]; then
-    #    printf "Output \"%s\"\n" "${_outputDir}/records/${_recordName}.ascii" >> "${_tapePath}"
-    #fi
 
     export TAPE_OUTPUT=${_recordFilePath}
     export TAPE_INPUT_DIR=${_inputDir}
