@@ -17,9 +17,10 @@ Visit the branch [themes](../themes/) for viewing the complete list.
 - Same remote contents should not be generated and published unless forced
 - Keep the size of the repository consistent over time by
 	- Publishing records to a dedicated orphan branch (that is deleted beforehand)
+- As some file systems can be case-insensitive, duplicates will not be recorded. For instance, with the themes `TokyoNight` and `tokyonight`, the latter will be discarded
 - Viewing the records in a browser should be a good experience
 	- Good balance between the number of records per page (loading time) versus the total number of pages to navigate
-- Logs should be useful but concise so that generating 280 records won't create zillions of lines
+- Logs should be useful but concise so that generating many records won't output zillions of lines
 - A single record should
 	- Be good enough to view the theme (ie: font size, content, and time)
 	- Be as small as possible which saves GitHub repository size, and time to record and publish
