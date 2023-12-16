@@ -1,6 +1,6 @@
 # VHS Themes
 
-**VHS Themes** generates and hosts a gallery showcasing ~350 themes from [charmbracelet/vhs](https://github.com/charmbracelet/vhs).
+**VHS Themes** builds and hosts a gallery showcasing hundreds of themes from [charmbracelet/vhs](https://github.com/charmbracelet/vhs).
 
 ## Themes
 
@@ -12,7 +12,7 @@ Visit the branch [themes](../themes/) for viewing the complete list.
 
 ## Requirements
 
-- VHS comes with hundreds of themes. Recording and publishing them should be done in less than [6 hours with GitHub Actions](https://docs.github.com/en/actions/learn-github-actions/usage-limits-billing-and-administration#usage-limits)
+- VHS comes with hundreds of themes. Recording and publishing that many records should be done in less than [6 hours with GitHub Actions](https://docs.github.com/en/actions/learn-github-actions/usage-limits-billing-and-administration#usage-limits)
 	- The shorter the better
 - Same remote contents should not be generated and published unless forced
 - Keep the size of the repository consistent over time by
