@@ -2,7 +2,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# This file contains all function related to themes!
+# getAllThemes returns all themes (sorted) including duplicates
 getAllThemes(){
     declare -n _retAllThemes="${1}"
 
@@ -29,6 +29,8 @@ getAllThemes(){
     fi
 }
 
+# getAllDuplicateThemes returns duplicates from all themes
+#
 # 1) With ignore case
 # printf "tokyonight\nTokyoNight\ntokyonight" | sort --ignore-case | uniq -D --ignore-case
 # TokyoNight
