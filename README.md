@@ -8,7 +8,7 @@ Visit the branch [themes](../themes/) for viewing the complete list.
 
 | | |
 |:--:|:--:|
-| ![3024 Day](../themes/records/3024%20Day.gif)<br>3024 Day | ![3024 Night](../themes/records/3024%20Night.gif)<br>3024 Night |
+| ![3024 Day](../themes/records/001%203024%20Day.gif)<br>3024 Day | ![3024 Night](../themes/records/002%203024%20Night.gif)<br>3024 Night |
 
 ## Requirements
 
