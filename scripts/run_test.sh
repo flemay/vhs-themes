@@ -106,7 +106,15 @@ testDownload(){
 rm -fr "${testOutputDir}"
 shellcheck --enable all scripts/*.sh
 testMetadata
+
+SECONDS=0
 testRecordAndPage
+readonly duration="${SECONDS}"
+logInfo "Duration for testing record and page: ${duration} seconds"
+if (( duration > 60 ));then
+    logError "Want duration less or equal to 60 seconds, got ${duration}"
+    exit 1
+fi
 
 if [[ "${ENV_INT_TEST_E2E:?}" == "true" ]]; then
     testPublish
