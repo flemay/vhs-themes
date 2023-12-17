@@ -34,13 +34,18 @@ record() {
     vhs "${_tapePath}" &> /dev/null
 }
 
-# https://www.shellcheck.net/wiki/SC2115
-rm -fr "${ENV_OUTPUT_DIR:?}"/*
-mkdir -p "${ENV_OUTPUT_DIR}"/records
-
 declare -a themes
 getThemes themes
 warnIfDuplicateThemes
+
+if (( ${#themes[@]} > 500 ));then
+    logError "There are ${#themes[@]} themes to be recorded which is greater than the arbitrary limit of 500"
+    exit 1
+fi
+
+# https://www.shellcheck.net/wiki/SC2115
+rm -fr "${ENV_OUTPUT_DIR:?}"/*
+mkdir -p "${ENV_OUTPUT_DIR}"/records
 
 declare -i counter=0
 for theme in "${themes[@]}"; do
