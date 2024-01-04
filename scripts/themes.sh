@@ -45,16 +45,16 @@ getAllDuplicateThemes(){
     declare -n _retDuplicates="${1}"
     declare -r _withIgnoreCase="${2}"
 
-    local _uniqOptions="-D"
+    local _uniqIgnoreCase=""
     if [[ "${_withIgnoreCase}" == "true" ]];then
-        _uniqOptions="-D --ignore-case"
+        _uniqIgnoreCase="--ignore-case"
     fi
 
     getAllThemes _retDuplicates
     # shellcheck disable=SC2248,SC2086
     mapfile -t _retDuplicates < <(printf "%s\n" "${_retDuplicates[@]}" \
         | sort --ignore-case \
-        | uniq ${_uniqOptions} \
+        | uniq -D ${_uniqIgnoreCase} \
         || true)
 }
 
@@ -82,14 +82,14 @@ getAllUniqThemes(){
     declare -n _retUniqThemes="${1}"
     declare -r _withIgnoreCase="${2}"
 
-    local _uniqOptions=""
+    local _uniqIgnoreCase=""
     if [[ "${_withIgnoreCase}" == "true" ]];then
-        _uniqOptions="--ignore-case"
+        _uniqIgnoreCase="--ignore-case"
     fi
     getAllThemes _retUniqThemes
     # shellcheck disable=SC2248
     mapfile -t _retUniqThemes < <( printf "%s\n" "${_retUniqThemes[@]}" \
-        | uniq ${_uniqOptions} \
+        | uniq ${_uniqIgnoreCase} \
         || true)
 }
 
