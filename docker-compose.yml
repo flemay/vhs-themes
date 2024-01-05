@@ -6,8 +6,8 @@ services:
     volumes:
       - type: bind
         source: "."
-        target: /mnt/src
-    working_dir: /mnt/src
+        target: /opt/src
+    working_dir: /opt/src
     environment:
       - TZ="${ENV_TZ:-UTC}"
       - TERM=xterm-256color
