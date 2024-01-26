@@ -5,12 +5,41 @@ IFS=$'\n\t'
 source scripts/env.sh
 logInfo "Paging started..."
 
+getRecordsDir() {
+    declare -n _retRecordsDir="${1}"
+    _retRecordsDir="${ENV_OUTPUT_DIR}"/records
+}
+
+getFilteredRecordFiles() {
+    declare -n _retRecordFiles="${1}"
+    declare -r _recordsFilter="${2}"
+
+    local _recordsDir
+    getRecordsDir _recordsDir
+    mapfile -t _retRecordFiles < <(find "${_recordsDir}"/${_recordsFilter} | LC_ALL=C sort -f)
+}
+
+getRelativePathAndName(){
+    declare -n _retPath="${1}"
+    declare -n _retName="${2}"
+    declare -r _recordFile="${3}"
+
+    # Transform "output/records/001 3024 Day.gif" to "../records/001%203024%20Day.gif"
+    _retPath=${_recordFile/"${ENV_OUTPUT_DIR}"/".."}
+    _retPath=${_retPath// /%20}
+
+    # Transform "output/records/001 3024 Day.gif" to "3024 Day"
+    _retName=${_recordFile#"${ENV_OUTPUT_DIR}"/records/}
+    _retName="${_retName:4}"
+    _retName="${_retName%.gif}"
+}
+
 # With 'declare -n' I can pass (and update without eval) return value, and also pass an array
 getPagination(){
     declare -n _retPagination="${1}"
-    declare -nr _recordFiles2="${2}"
+    declare -nr _recordFiles4="${2}"
 
-    declare -ir _totalRecords="${#_recordFiles2[@]}"
+    declare -ir _totalRecords="${#_recordFiles4[@]}"
     if (( "${ENV_PAGINATION:?}" == -1 )); then
         readonly _retPagination="${_totalRecords}"
     else
@@ -22,10 +51,10 @@ getPagination(){
 # To do rounding up in truncating arithmetic, simply add (denom-1) to the numerator.
 getTotalPages() {
     declare -n _retTotalPages="${1}"
-    declare -nr _recordFiles1="${2}"
-    declare -ir _totalRecords="${#_recordFiles1[@]}"
+    declare -nr _recordFiles2="${2}"
+    declare -ir _totalRecords="${#_recordFiles2[@]}"
     declare -i _pagination
-    getPagination _pagination _recordFiles1
+    getPagination _pagination _recordFiles2
     _retTotalPages=$(( (_totalRecords + (_pagination-1)) / _pagination ))
 }
 
@@ -51,9 +80,9 @@ getFromRecordIndexAndLength(){
 
 getPagePath() {
     declare -n _retPath="${1}"
-    declare -r _pageNo="${2}"
-    declare -ri _layoutNo="${3}"
-    _retPath="${ENV_OUTPUT_DIR:?}/pages/page_l${_layoutNo}_${_pageNo}.md"
+    declare -r _pageNamePrefix="${2}"
+    declare -ri _pageNo="${3}"
+    _retPath="${ENV_OUTPUT_DIR:?}/pages/${_pageNamePrefix}_${_pageNo}.md"
 }
 
 getPageLinks() {
@@ -69,11 +98,12 @@ getPageLinks() {
     done
 }
 
-printPageHeaderOrFooter(){
+printPageHeaderAndFooter(){
     declare -nr _recordFiles4="${1}"
     declare -r _pagePath="${2}"
     declare -i _pageNo="${3}"
     declare -i _layoutNo="${4}"
+    declare -r _vhsVersion="${4}"
 
     declare -i _totalPages
     getTotalPages _totalPages _recordFiles4
@@ -83,6 +113,7 @@ printPageHeaderOrFooter(){
     getPageLinks _pageLinksLayout2 "${_totalPages}" 2
     declare -ir _totalRecords="${#_recordFiles4[@]}"
 
+    printf "# VHS Themes\n\n" > "${_pagePath}"
     local _layout1Links=""
     local _layout2Links=""
     if (( _layoutNo == 1 ));then
@@ -102,79 +133,25 @@ printPageHeaderOrFooter(){
     } >> "${_pagePath}"
 }
 
-getRelativePathAndName(){
-    declare -n _retPath="${1}"
-    declare -n _retName="${2}"
-    declare -r _recordFile="${3}"
+printPageBody(){
+    declare -nr _recordFiles1="${1}"
+    declare -r _pageNamePrefix="${2}"
+    declare -ir _pageNo="${3}"
 
-    # Transform "output/records/001 3024 Day.gif" to "../records/001%203024%20Day.gif"
-    _retPath=${_recordFile/"${ENV_OUTPUT_DIR}"/".."}
-    _retPath=${_retPath// /%20}
-
-    # Transform "output/records/001 3024 Day.gif" to "3024 Day"
-    _retName=${_recordFile#"${ENV_OUTPUT_DIR}"/records/}
-    _retName="${_retName:4}"
-    _retName="${_retName%.gif}"
-}
-
-printPageLayout1(){
-    declare -nr _recordFiles="${1}"
-    declare -ir _pageNo="${2}"
-    declare -r _vhsVersion="${3}"
-
-    declare -r _layoutNo=1
     local _pagePath=""
-    getPagePath _pagePath "${_pageNo}" "${_layoutNo}"
+    getPagePath _pagePath "${_pageNamePrefix}" "${_pageNo}"
 
     logInfo "Create page '${_pagePath}'"
-    printf "# VHS Themes\n\n" > "${_pagePath}"
-    printPageHeaderOrFooter _recordFiles "${_pagePath}" "${_pageNo}" "${_layoutNo}"
-    {
-        printf "|||\n"
-        printf "|:---:|:----:|\n"
-    } >> "${_pagePath}"
+    printf "|||\n" > "${_pagePath}"
+    printf "|:---:|:---:|\n" >> "${_pagePath}"
 
     declare -i _fromIndex
     declare -i _length
-    getFromRecordIndexAndLength _fromIndex _length _recordFiles "${_pageNo}"
-    declare -i _recordCounter="${_fromIndex}"
-    for _recordFile in "${_recordFiles[@]:${_fromIndex}:${_length}}";do
-        ((_recordCounter+=1))
-        local _path=""
-        local _name=""
-        getRelativePathAndName _path _name "${_recordFile}"
-        #local _imageLink="<img alt=\"${_name}\" src=\"${_path}\" width=\"500px\"><br>${_recordCounter}. ${_name}"
-        local _imageLink="![${_name}](${_path})"
-        printf "| %d. %s | %s |\n" "${_recordCounter}" "${_name}" "${_imageLink}" >> "${_pagePath}"
-    done
-    printf "\n" >> "${_pagePath}"
-    printPageHeaderOrFooter _recordFiles "${_pagePath}" "${_pageNo}" "${_layoutNo}"
-}
-
-printPageLayout2(){
-    declare -nr _recordFiles="${1}"
-    declare -ir _pageNo="${2}"
-    declare -r _vhsVersion="${3}"
-
-    declare -r _layoutNo=2
-    local _pagePath=""
-    getPagePath _pagePath "${_pageNo}" "${_layoutNo}"
-
-    logInfo "Create page '${_pagePath}'"
-    printf "# VHS Themes\n\n" > "${_pagePath}"
-    printPageHeaderOrFooter _recordFiles "${_pagePath}" "${_pageNo}" "${_layoutNo}"
-    {
-        printf "|||\n"
-        printf "|:---:|:---:|\n"
-    } >> "${_pagePath}"
-
-    declare -i _fromIndex
-    declare -i _length
-    getFromRecordIndexAndLength _fromIndex _length _recordFiles "${_pageNo}"
+    getFromRecordIndexAndLength _fromIndex _length _recordFiles1 "${_pageNo}"
 
     declare -i _recordCounter="${_fromIndex}"
     local _recordCellOne=""
-    for _recordFile in "${_recordFiles[@]:${_fromIndex}:${_length}}";do
+    for _recordFile in "${_recordFiles1[@]:${_fromIndex}:${_length}}";do
         ((_recordCounter+=1))
         local _path=""
         local _name=""
@@ -190,17 +167,27 @@ printPageLayout2(){
     if [[ "${_recordCellOne}" != "" ]];then
         printf "| %s | %s |\n" "${_recordCellOne}" "${_recordCellOne}" >> "${_pagePath}"
     fi
-    printf "\n" >> "${_pagePath}"
-    printPageHeaderOrFooter _recordFiles "${_pagePath}" "${_pageNo}" "${_layoutNo}"
+}
+
+createPages() {
+    declare -nr _recordFiles="${1}"
+    declare -r _pagePrefixName="${2}"
+
+    declare -i _totalPages=0
+    getTotalPages _totalPages _recordFiles
+
+    for _pageNo in $(seq 1 "${_totalPages}"); do
+        printPageBody _recordFiles "${_pagePrefixName}" "${_pageNo}"
+    done
 }
 
 # This creates a README inside output dir
 # This is done here so it can be tested before calling publish
-createREADME(){
+createREADME() {
     declare -r _readmePath="${ENV_OUTPUT_DIR}/README.md"
     logInfo "Create ${_readmePath}"
     rm -fr "${_readmePath}"
-    cp "${ENV_OUTPUT_DIR}"/pages/page_l2_1.md "${_readmePath}"
+    cp "${ENV_OUTPUT_DIR}"/pages/page_1.md "${_readmePath}"
     sed -i 's/..\/records\//records\//g' "${_readmePath}"
     sed -i 's/(index.md)/(pages\/index.md)/g' "${_readmePath}"
     sed -i 's/(page_/(pages\/page_/g' "${_readmePath}"
@@ -225,26 +212,10 @@ mkdir -p "${ENV_OUTPUT_DIR}"/pages
 
 vhsVersion=$(vhs --version)
 readonly vhsVersion
-readonly recordsDir="${ENV_OUTPUT_DIR}"/records
-# shellcheck disable=SC2312,SC2034
-mapfile -t recordFiles < <(find "${recordsDir}"/*.gif | LC_ALL=C sort -f)
-
-createIndex recordFiles
-
-declare -i totalPages=0
-getTotalPages totalPages recordFiles
-
-for pageNo in $(seq 1 "${totalPages}"); do
-    printPageLayout1 \
-        recordFiles \
-        "${pageNo}" \
-        "${vhsVersion}"
-    printPageLayout2 \
-        recordFiles \
-        "${pageNo}" \
-        "${vhsVersion}"
-done
-
+declare -a recordsFiles
+getFilteredRecordFiles recordsFiles *.gif
+createPages recordsFiles "page"
+createIndex recordsFiles
 createREADME
 
 logInfo "Paging done!"
