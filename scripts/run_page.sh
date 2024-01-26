@@ -7,7 +7,7 @@ logInfo "Paging started..."
 
 getRecordsDir() {
     declare -n _retRecordsDir="${1}"
-    _retRecordsDir="${ENV_OUTPUT_DIR}"/records
+    _retRecordsDir="${ENV_OUTPUT_DIR:?}"/records
 }
 
 getFilteredRecordFiles() {
@@ -16,10 +16,11 @@ getFilteredRecordFiles() {
 
     local _recordsDir
     getRecordsDir _recordsDir
+    # shellcheck disable=SC2312
     mapfile -t _retRecordFiles < <(find "${_recordsDir}" -regextype egrep -iregex "${_recordsFilter}" | LC_ALL=C sort -f)
 }
 
-getRelativePathAndName(){
+getRecordRelativePathAndName(){
     declare -n _retPath="${1}"
     declare -n _retName="${2}"
     declare -r _recordFile="${3}"
@@ -78,59 +79,11 @@ getFromRecordIndexAndLength(){
     fi
 }
 
-getPagePath() {
+constructPagePath() {
     declare -n _retPath="${1}"
     declare -r _pageNamePrefix="${2}"
     declare -ri _pageNo="${3}"
     _retPath="${ENV_OUTPUT_DIR:?}/pages/${_pageNamePrefix}_${_pageNo}.md"
-}
-
-getPageLinks() {
-    declare -n _retPageLinks="${1}"
-    declare -r _totalPages="${2}"
-    declare -i _layoutNo="${3}"
-
-    _retPageLinks=""
-    local _pageLink
-    for i in $(seq 1 "${_totalPages}");do
-        printf -v _pageLink "[[Page %d](page_l%d_%d.md)]" "${i}" "${_layoutNo}" "${i}"
-        _retPageLinks="${_retPageLinks} ${_pageLink}"
-    done
-}
-
-printPageHeaderAndFooter(){
-    declare -nr _recordFiles4="${1}"
-    declare -r _pagePath="${2}"
-    declare -i _pageNo="${3}"
-    declare -i _layoutNo="${4}"
-    declare -r _vhsVersion="${4}"
-
-    declare -i _totalPages
-    getTotalPages _totalPages _recordFiles4
-    local _pageLinksLayout1=""
-    getPageLinks _pageLinksLayout1 "${_totalPages}" 1
-    local _pageLinksLayout2=""
-    getPageLinks _pageLinksLayout2 "${_totalPages}" 2
-    declare -ir _totalRecords="${#_recordFiles4[@]}"
-
-    printf "# VHS Themes\n\n" > "${_pagePath}"
-    local _layout1Links=""
-    local _layout2Links=""
-    if (( _layoutNo == 1 ));then
-        _layout1Links="**Layout 1: ${_pageLinksLayout1}**"
-        _layout2Links="Layout 2: ${_pageLinksLayout2}"
-    else
-        _layout1Links="Layout 1:${_pageLinksLayout1}"
-        _layout2Links="**Layout 2:${_pageLinksLayout2}**"
-    fi
-    {
-        printf "Page %d of %d (layout %d)\n\n" "${_pageNo}" "${_totalPages}" "${_layoutNo}"
-        printf "Total of %d records (themes) generated with \`%s\`\n\n" "${_totalRecords}" "${_vhsVersion}"
-        printf "[[< Home](../../main)] [[Index](index.md)]<br>\n"
-        printf "%s<br>\n" "${_layout1Links}"
-        printf "%s<br>\n" "${_layout2Links}"
-        printf "> Tip: Resize the records by resizing the page\n\n"
-    } >> "${_pagePath}"
 }
 
 printPageBody(){
@@ -139,7 +92,7 @@ printPageBody(){
     declare -ir _pageNo="${3}"
 
     local _pagePath=""
-    getPagePath _pagePath "${_pageNamePrefix}" "${_pageNo}"
+    constructPagePath _pagePath "${_pageNamePrefix}" "${_pageNo}"
 
     logInfo "Create page '${_pagePath}'"
     printf "|||\n" > "${_pagePath}"
@@ -155,7 +108,7 @@ printPageBody(){
         ((_recordCounter+=1))
         local _path=""
         local _name=""
-        getRelativePathAndName _path _name "${_recordFile}"
+        getRecordRelativePathAndName _path _name "${_recordFile}"
         local _recordCellTwo="![${_name}](${_path})<br>${_recordCounter}. ${_name}"
         if [[ "${_recordCellOne}" == "" ]];then
             _recordCellOne="${_recordCellTwo}"
@@ -181,47 +134,108 @@ createPages() {
     done
 }
 
+createPageIndex(){
+    declare -nr _recordFiles="${1}"
+    declare -r _indexPath="${ENV_OUTPUT_DIR}/pages/index.md"
+    logInfo "Create ${_indexPath}"
+    printf "" > "${_indexPath}"
+    local _path
+    local _name
+    for _recordFile in "${_recordFiles[@]}"; do
+        getRecordRelativePathAndName _path _name "${_recordFile}"
+        printf "1. [%s](%s)\n" "${_name}" "${_path}" >> "${_indexPath}"
+    done
+}
+
+getPageName() {
+    declare -n _retPageName="${1}"
+    declare -r _pageFile="${2}"
+
+    # Transform "output/pages/all_1.md" to "all_1"
+    _retPageName="${_pageFile#"${ENV_OUTPUT_DIR}"/pages/}"
+    _retPageName="${_retPageName%.md}"
+}
+
+getMarkdownPagesLinks() {
+    declare -n _retPageLinks="${1}"
+    declare -nr _pageFiles="${2}"
+
+    _retPageLinks="[[< home](../../main)] [[index](index.md)]"
+    local _pageLink
+    for _pageFile in "${_pageFiles[@]}"; do
+        if [[ "${_pageFile}" =~ index\.md ]]; then
+            continue
+        fi
+        local _pageName
+        getPageName _pageName "${_pageFile}"
+        printf -v _pageLink "[[%s](%s.md)]" "${_pageName}" "${_pageName}"
+        _retPageLinks="${_retPageLinks} ${_pageLink}"
+    done
+}
+
+printHeaderAndFooterToPages() {
+    declare -ir _totalRecords="${1}"
+    local _vhsVersion
+    _vhsVersion=$(vhs --version)
+    declare -a _pageFiles1
+    # shellcheck disable=SC2312
+    mapfile -t _pageFiles1 < <(find "${ENV_OUTPUT_DIR}"/pages/*.md | LC_ALL=C sort -f)
+    local _pageLinks
+    getMarkdownPagesLinks _pageLinks _pageFiles1
+    for _pageFile in "${_pageFiles1[@]}"; do
+        local _pageName1
+        getPageName _pageName1 "${_pageFile}"
+        local _content
+        _content=$(cat <<EOF
+Page: ${_pageName1}
+Total of ${_totalRecords} records (themes) generated with \`${_vhsVersion}\`.
+${_pageLinks}
+> Tip: Resize the records by resizing the page
+EOF
+)
+        local _tmpFile
+        _tmpFile=$(mktemp)
+        # Header
+        printf "# VHS Themes - %s\n\n%s\n\n" "${_pageName1}" "${_content}" | cat - "${_pageFile}" > "${_tmpFile}"
+        # Footer
+        printf "\n%s" "${_content}" >> "${_tmpFile}"
+        # Replace file
+        cp -f "${_tmpFile}" "${_pageFile}"
+    done
+}
+
 # This creates a README inside output dir
 # This is done here so it can be tested before calling publish
 createREADME() {
     declare -r _readmePath="${ENV_OUTPUT_DIR}/README.md"
     logInfo "Create ${_readmePath}"
     rm -fr "${_readmePath}"
-    cp "${ENV_OUTPUT_DIR}"/pages/page_1.md "${_readmePath}"
+    cp "${ENV_OUTPUT_DIR}"/pages/all_1.md "${_readmePath}"
     sed -i 's/..\/records\//records\//g' "${_readmePath}"
     sed -i 's/(index.md)/(pages\/index.md)/g' "${_readmePath}"
-    sed -i 's/(page_/(pages\/page_/g' "${_readmePath}"
     sed -i 's/(..\/..\/main)/(..\/main)/' "${_readmePath}"
-}
-
-createIndex(){
-    declare -nr _recordFiles="${1}"
-    declare -r _indexPath="${ENV_OUTPUT_DIR}/pages/index.md"
-    logInfo "Create ${_indexPath}"
-    printf "# Index\n\n" > "${_indexPath}"
-    local _path
-    local _name
-    for _recordFile in "${_recordFiles[@]}"; do
-        getRelativePathAndName _path _name "${_recordFile}"
-        printf "1. [%s](%s)\n" "${_name}" "${_path}" >> "${_indexPath}"
-    done
+    sed -i 's/(all_/(pages\/all_/g' "${_readmePath}"
+    sed -i 's/(dark_and_night_/(pages\/dark_and_night_/g' "${_readmePath}"
+    sed -i 's/(light_and_day_/(pages\/light_and_day_/g' "${_readmePath}"
 }
 
 rm -fr "${ENV_OUTPUT_DIR:?}"/pages
 mkdir -p "${ENV_OUTPUT_DIR}"/pages
 
-vhsVersion=$(vhs --version)
-readonly vhsVersion
+# Note: if the page names change, the function `createREADME` needs to be updated
 declare -a recordsFiles
-
 getFilteredRecordFiles recordsFiles ".*\.gif"
-createPages recordsFiles "page"
-createIndex recordsFiles
-getFilteredRecordFiles recordsFiles ".*(dark|night).*\.gif"
-createPages recordsFiles "dark_or_night"
-getFilteredRecordFiles recordsFiles ".*(light|day).*\.gif"
-createPages recordsFiles "light_or_day"
+createPages recordsFiles "all"
+createPageIndex recordsFiles
+declare -i totalRecords="${#recordsFiles[@]}"
 
+getFilteredRecordFiles recordsFiles ".*(dark|night).*\.gif"
+createPages recordsFiles "dark_and_night"
+
+getFilteredRecordFiles recordsFiles ".*(light|day).*\.gif"
+createPages recordsFiles "light_and_day"
+
+printHeaderAndFooterToPages "${totalRecords}"
 
 createREADME
 
