@@ -16,7 +16,7 @@ getFilteredRecordFiles() {
 
     local _recordsDir
     getRecordsDir _recordsDir
-    mapfile -t _retRecordFiles < <(find "${_recordsDir}"/${_recordsFilter} | LC_ALL=C sort -f)
+    mapfile -t _retRecordFiles < <(find "${_recordsDir}" -regextype egrep -iregex "${_recordsFilter}" | LC_ALL=C sort -f)
 }
 
 getRelativePathAndName(){
@@ -213,9 +213,16 @@ mkdir -p "${ENV_OUTPUT_DIR}"/pages
 vhsVersion=$(vhs --version)
 readonly vhsVersion
 declare -a recordsFiles
-getFilteredRecordFiles recordsFiles *.gif
+
+getFilteredRecordFiles recordsFiles ".*\.gif"
 createPages recordsFiles "page"
 createIndex recordsFiles
+getFilteredRecordFiles recordsFiles ".*(dark|night).*\.gif"
+createPages recordsFiles "dark_or_night"
+getFilteredRecordFiles recordsFiles ".*(light|day).*\.gif"
+createPages recordsFiles "light_or_day"
+
+
 createREADME
 
 logInfo "Paging done!"
