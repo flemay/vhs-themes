@@ -79,7 +79,7 @@ getFromRecordIndexAndLength(){
     fi
 }
 
-constructPagePath() {
+toPagePath() {
     declare -n _retPath="${1}"
     declare -r _pageName="${2}"
     declare -ri _pageNo="${3}"
@@ -92,7 +92,7 @@ printPageBody(){
     declare -ir _pageNo="${3}"
 
     local _pagePath=""
-    constructPagePath _pagePath "${_pageName1}" "${_pageNo}"
+    toPagePath _pagePath "${_pageName1}" "${_pageNo}"
 
     logInfo "Create page '${_pagePath}'"
     printf "|||\n" > "${_pagePath}"
@@ -161,6 +161,7 @@ getPageFilename() {
     declare -r _pageFile="${2}"
 
     # Transform "output/pages/page_all_1.md" to "page_all_1.md"
+    # shellcheck disable=SC2295
     _retPageFilename="${_pageFile#${ENV_OUTPUT_DIR}/pages/}"
 }
 
@@ -178,7 +179,7 @@ getMarkdownPagesLinks() {
         getPageName _pageName "${_pageFile}"
         local _pageFilename
         getPageFilename _pageFilename "${_pageFile}"
-        printf -v _pageLink "[[%s](%s.md)]" "${_pageName}" "${_pageFilename}"
+        printf -v _pageLink "[[%s](%s)]" "${_pageName}" "${_pageFilename}"
         _retPageLinks="${_retPageLinks} ${_pageLink}"
     done
 }
@@ -197,10 +198,10 @@ printHeaderAndFooterToPages() {
         getPageName _pageName1 "${_pageFile}"
         local _content
         _content=$(cat <<EOF
-Page: ${_pageName1}
-Total of ${_totalRecords} records (themes) generated with \`${_vhsVersion}\`.
+Page: ${_pageName1}<br>
+Total of ${_totalRecords} records (themes) generated with \`${_vhsVersion}\`.<br>
 ${_pageLinks}
-> Tip: Resize the records by resizing the page
+> Tip: Resize the page to resize the records.
 EOF
 )
         local _tmpFile

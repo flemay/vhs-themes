@@ -44,11 +44,10 @@ testRecordAndPage(){
     declare -r _expectedOutputFilesAndDirs="${testOutputDir}
 ${testOutputDir}/README.md
 ${testOutputDir}/pages
-${testOutputDir}/pages/index.md
-${testOutputDir}/pages/page_l1_1.md
-${testOutputDir}/pages/page_l1_2.md
-${testOutputDir}/pages/page_l2_1.md
-${testOutputDir}/pages/page_l2_2.md
+${testOutputDir}/pages/page_all_1.md
+${testOutputDir}/pages/page_all_2.md
+${testOutputDir}/pages/page_index.md
+${testOutputDir}/pages/page_light_and_day_1.md
 ${testOutputDir}/records
 ${testOutputDir}/records/001 3024 Day.gif
 ${testOutputDir}/records/002 Adventure.gif
