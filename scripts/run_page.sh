@@ -81,18 +81,18 @@ getFromRecordIndexAndLength(){
 
 constructPagePath() {
     declare -n _retPath="${1}"
-    declare -r _pageNamePrefix="${2}"
+    declare -r _pageName="${2}"
     declare -ri _pageNo="${3}"
-    _retPath="${ENV_OUTPUT_DIR:?}/pages/${_pageNamePrefix}_${_pageNo}.md"
+    _retPath="${ENV_OUTPUT_DIR:?}/pages/page_${_pageName}_${_pageNo}.md"
 }
 
 printPageBody(){
     declare -nr _recordFiles1="${1}"
-    declare -r _pageNamePrefix="${2}"
+    declare -r _pageName1="${2}"
     declare -ir _pageNo="${3}"
 
     local _pagePath=""
-    constructPagePath _pagePath "${_pageNamePrefix}" "${_pageNo}"
+    constructPagePath _pagePath "${_pageName1}" "${_pageNo}"
 
     logInfo "Create page '${_pagePath}'"
     printf "|||\n" > "${_pagePath}"
@@ -124,19 +124,19 @@ printPageBody(){
 
 createPages() {
     declare -nr _recordFiles="${1}"
-    declare -r _pagePrefixName="${2}"
+    declare -r _pageName2="${2}"
 
     declare -i _totalPages=0
     getTotalPages _totalPages _recordFiles
 
     for _pageNo in $(seq 1 "${_totalPages}"); do
-        printPageBody _recordFiles "${_pagePrefixName}" "${_pageNo}"
+        printPageBody _recordFiles "${_pageName2}" "${_pageNo}"
     done
 }
 
 createPageIndex(){
     declare -nr _recordFiles="${1}"
-    declare -r _indexPath="${ENV_OUTPUT_DIR}/pages/index.md"
+    declare -r _indexPath="${ENV_OUTPUT_DIR}/pages/page_index.md"
     logInfo "Create ${_indexPath}"
     printf "" > "${_indexPath}"
     local _path
@@ -151,16 +151,24 @@ getPageName() {
     declare -n _retPageName="${1}"
     declare -r _pageFile="${2}"
 
-    # Transform "output/pages/all_1.md" to "all_1"
-    _retPageName="${_pageFile#"${ENV_OUTPUT_DIR}"/pages/}"
+    # Transform "output/pages/page_all_1.md" to "all_1"
+    _retPageName="${_pageFile#"${ENV_OUTPUT_DIR}"/pages/page_}"
     _retPageName="${_retPageName%.md}"
+}
+
+getPageFilename() {
+    declare -n _retPageFilename="${1}"
+    declare -r _pageFile="${2}"
+
+    # Transform "output/pages/page_all_1.md" to "page_all_1.md"
+    _retPageFilename="${_pageFile#${ENV_OUTPUT_DIR}/pages/}"
 }
 
 getMarkdownPagesLinks() {
     declare -n _retPageLinks="${1}"
     declare -nr _pageFiles="${2}"
 
-    _retPageLinks="[[< home](../../main)] [[index](index.md)]"
+    _retPageLinks="[[source](../../main)] [[index](page_index.md)]"
     local _pageLink
     for _pageFile in "${_pageFiles[@]}"; do
         if [[ "${_pageFile}" =~ index\.md ]]; then
@@ -168,7 +176,9 @@ getMarkdownPagesLinks() {
         fi
         local _pageName
         getPageName _pageName "${_pageFile}"
-        printf -v _pageLink "[[%s](%s.md)]" "${_pageName}" "${_pageName}"
+        local _pageFilename
+        getPageFilename _pageFilename "${_pageFile}"
+        printf -v _pageLink "[[%s](%s.md)]" "${_pageName}" "${_pageFilename}"
         _retPageLinks="${_retPageLinks} ${_pageLink}"
     done
 }
@@ -210,19 +220,15 @@ createREADME() {
     declare -r _readmePath="${ENV_OUTPUT_DIR}/README.md"
     logInfo "Create ${_readmePath}"
     rm -fr "${_readmePath}"
-    cp "${ENV_OUTPUT_DIR}"/pages/all_1.md "${_readmePath}"
+    cp "${ENV_OUTPUT_DIR}"/pages/page_all_1.md "${_readmePath}"
     sed -i 's/..\/records\//records\//g' "${_readmePath}"
-    sed -i 's/(index.md)/(pages\/index.md)/g' "${_readmePath}"
     sed -i 's/(..\/..\/main)/(..\/main)/' "${_readmePath}"
-    sed -i 's/(all_/(pages\/all_/g' "${_readmePath}"
-    sed -i 's/(dark_and_night_/(pages\/dark_and_night_/g' "${_readmePath}"
-    sed -i 's/(light_and_day_/(pages\/light_and_day_/g' "${_readmePath}"
+    sed -i 's/(page_/(pages\/page_/g' "${_readmePath}"
 }
 
 rm -fr "${ENV_OUTPUT_DIR:?}"/pages
 mkdir -p "${ENV_OUTPUT_DIR}"/pages
 
-# Note: if the page names change, the function `createREADME` needs to be updated
 declare -a recordsFiles
 getFilteredRecordFiles recordsFiles ".*\.gif"
 createPages recordsFiles "all"
