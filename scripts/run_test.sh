@@ -3,10 +3,12 @@ set -euo pipefail
 IFS=$'\n\t'
 
 readonly testOutputDir="output_test"
+
+export ENV_GIT_PUBLISH_BRANCH="themes_test_e2e"
 export ENV_INPUT_DIR=input
 export ENV_OUTPUT_DIR="${testOutputDir}"
 export ENV_PAGINATION=2
-export ENV_PUBLISH_BRANCH="themes_test_e2e"
+export ENV_PUBLISH_DIR=/opt/src/"${testOutputDir}"
 export ENV_THEMES="TokyoNight,tokyonight,3024 Day,Adventure,Aurora,tokyonight"
 export ENV_THEMES_LIMIT=3
 
@@ -66,7 +68,7 @@ testPublish(){
     declare -r _outputFilePath="/tmp/output.txt"
     # Output error to stdout and save output to a file for later comparison
     ./scripts/run_publish.sh 2>&1 | tee "${_outputFilePath}"
-    _expectedMessage="Publishing to branch '${ENV_PUBLISH_BRANCH}' is done"
+    _expectedMessage="Publishing to branch '${ENV_GIT_PUBLISH_BRANCH}' is done"
     if ! grep -q "${_expectedMessage}" "${_outputFilePath}";then
         logError "Expected message: ${_expectedMessage}"
         exit 1
@@ -120,5 +122,5 @@ if [[ "${ENV_INT_TEST_E2E:?}" == "true" ]]; then
     testDownload
 fi
 
-logInfo "Note: You can look at the dir '${testOutputDir}' as well as the remote publish branch '${ENV_PUBLISH_BRANCH}' (if testE2E) for examining result"
+logInfo "Note: You can look at the dir '${testOutputDir}' as well at the remote publish branch '${ENV_GIT_PUBLISH_BRANCH}' (if testE2E) for examining result"
 logInfo "Testing done!"

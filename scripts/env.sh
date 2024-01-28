@@ -30,6 +30,15 @@ gitAuth() {
     "$@"
 }
 
+# Gets the name of the repo from ENV_GIT_REPO_URL
+# Ex: https://github.com/flemay/vhs-themes.git -> vhs-themes
+getGitRepoName() {
+    declare -n _retRepoName="${1}"
+    declare -r _gitRepoURL="${ENV_GIT_REPO_URL:?}"
+    _retRepoName="${_gitRepoURL##*/}"
+    _retRepoName="${_retRepoName%.git}"
+}
+
 checkEnvVars(){
     if ! envTemplate=$(grep -v "#" env.template | awk -F '=' '{print $1}');then
         logError "checkEnvVars: failed"
@@ -45,11 +54,6 @@ checkEnvVars(){
         fi
     done
     if [[ "${hasUnsetEnvVars}" == "true" ]];then
-        exit 1
-    fi
-    # https://www.shellcheck.net/wiki/SC2015
-    if [[ "${ENV_PUBLISH_BRANCH:?}" == "main" ]]; then
-        logError "ENV_PUBLISH_BRANCH cannot be 'main'"
         exit 1
     fi
 }

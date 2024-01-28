@@ -15,7 +15,9 @@ readonly metadataLockFilePath="${ENV_OUTPUT_DIR:?}/metadata.lock"
 downloadMetadataFile() {
     logInfo "Metadata check: download remote metadata file"
     declare -r _downloadFilePath="${1}"
-    declare -r _endpoint="https://api.github.com/repos/${ENV_GIT_USERNAME:?}/${ENV_GIT_REPO_NAME:?}/contents/metadata.txt?ref=${ENV_PUBLISH_BRANCH:?}"
+    local _gitRepoName=""
+    getGitRepoName _gitRepoName
+    declare -r _endpoint="https://api.github.com/repos/${ENV_GIT_USERNAME:?}/${_gitRepoName}/contents/metadata.txt?ref=${ENV_GIT_PUBLISH_BRANCH:?}"
     curl -s -H "Authorization: Bearer ${ENV_GIT_TOKEN:?}" \
         -H "Accept: application/vnd.github.v3.raw" \
         -o "${_downloadFilePath}" \
