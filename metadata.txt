@@ -1,0 +1,9 @@
+VHS version: vhs version v0.7.1
+Themes: TokyoNight,tokyonight,3024 Day,Adventure,Aurora,tokyonight
+Themes limit: 3
+Pagination: 2
+Dir input: 9a011981857b7c6719e7bafc3eafaae44b7242a0f8979597b8a3421cca209d8c
+Themes recorded count: 3
+Themes recorded: 3024 Day,Adventure,Aurora
+Duplicate themes count: 2
+Duplicate themes: tokyonight,tokyonight
