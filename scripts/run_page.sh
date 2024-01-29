@@ -201,13 +201,12 @@ printHeaderAndFooterToPages() {
 Page: ${_pageName1}<br>
 Total of ${_totalRecords} records (themes) generated with \`${_vhsVersion}\`.<br>
 ${_pageLinks}
-> Tip: Resize the page to resize the records.
 EOF
 )
         local _tmpFile
         _tmpFile=$(mktemp)
         # Header
-        printf "# VHS Themes - %s\n\n%s\n\n" "${_pageName1}" "${_content}" | cat - "${_pageFile}" > "${_tmpFile}"
+        printf "# VHS Themes - %s\n\n%s\n<br>\n<br>\n" "${_pageName1}" "${_content}" | cat - "${_pageFile}" > "${_tmpFile}"
         # Footer
         printf "\n%s" "${_content}" >> "${_tmpFile}"
         # Replace file
