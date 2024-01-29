@@ -1,0 +1,8 @@
+*
+!README.md
+!records
+!records/*.gif
+!pages
+!pages/*.md
+!metadata.txt
+!.gitignore
