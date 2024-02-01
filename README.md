@@ -10,7 +10,7 @@ Visit the branch [themes](../themes/) for viewing the complete list.
 |:--:|:--:|
 | ![3024 Day](../themes/records/001%203024%20Day.gif)<br>3024 Day | ![3024 Night](../themes/records/002%203024%20Night.gif)<br>3024 Night |
 
-## Requirements
+## Project requirements
 
 - VHS comes with hundreds of themes. Recording and publishing that many records should be done in less than [6 hours with GitHub Actions](https://docs.github.com/en/actions/learn-github-actions/usage-limits-billing-and-administration#usage-limits)
 	- The shorter the better
